@@ -9,6 +9,62 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+Route::get('/profile', function () {
+    return view('profile');
+})->name('profile')->middleware('auth');
+
+
+//boooking
+Route::middleware(['auth', 'role:penyewa'])->prefix('penyewa')->name('penyewa.')->group(function () {
+
+    // Halaman detail kost
+    Route::get('/kost/{id}', [App\Http\Controllers\Penyewa\KostController::class, 'detail'])
+        ->name('detail');
+
+    // Store booking
+    Route::post('/booking/store', [App\Http\Controllers\Penyewa\BookingController::class, 'store'])
+        ->name('booking.store');
+
+});
+
+///penyewa
+Route::middleware(['auth', 'role:penyewa'])
+    ->prefix('penyewa')
+    ->name('penyewa.')
+    ->group(function () {
+        Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
+    });
+
+
+    Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    
+    Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
+
+    // Tambahkan route UPDATE STATUS
+    Route::put('/booking/{id}/update-status', [BookingController::class, 'updateStatus'])
+        ->name('booking.update-status');
+
+});
+
+Route::middleware(['auth', 'role:penyewa'])->group(function () {
+
+    Route::get('/penyewa/dashboard', [PenyewaController::class, 'index'])
+        ->name('penyewa.dashboard');
+
+    Route::get('/penyewa/booking', [BookingController::class, 'index'])
+        ->name('penyewa.booking');
+
+    Route::get('/penyewa/kamar', [KamarController::class, 'penyewaView'])
+        ->name('penyewa.kamar');
+
+    Route::get('/penyewa/settings', [PenyewaSettingController::class, 'index'])
+        ->name('penyewa.settings');
+
+});
+
+
+
+
 // LOGIN
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -22,6 +78,17 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [LoginController::class, 'logout'])
     ->name('logout')
     ->middleware('auth');
+
+//sidebar
+Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
+
+    Route::resource('kamar', KamarController::class);
+
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings');
+});
 
 
 // PENYEWA ROUTES
@@ -53,6 +120,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/booking', fn() => view('admin.booking.index'))->name('booking.index');
     });
 
+    
 
 // Fallback
 Route::fallback(function () {
