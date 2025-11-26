@@ -1,128 +1,113 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 
-// Default redirect ke login
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+use App\Http\Controllers\Penyewa\KostController as PenyewaKostController;
+use App\Http\Controllers\Penyewa\PenyewaController;
+use App\Http\Controllers\Penyewa\BookingController as PenyewaBookingController;
+use App\Http\Controllers\Penyewa\KamarController as PenyewaKamarController;
+use App\Http\Controllers\Penyewa\PenyewaSettingController;
 
-Route::get('/profile', function () {
-    return view('profile');
-})->name('profile')->middleware('auth');
-
-
-//boooking
-Route::middleware(['auth', 'role:penyewa'])->prefix('penyewa')->name('penyewa.')->group(function () {
-
-    // Halaman detail kost
-    Route::get('/kost/{id}', [App\Http\Controllers\Penyewa\KostController::class, 'detail'])
-        ->name('detail');
-
-    // Store booking
-    Route::post('/booking/store', [App\Http\Controllers\Penyewa\BookingController::class, 'store'])
-        ->name('booking.store');
-
-});
-
-///penyewa
-Route::middleware(['auth', 'role:penyewa'])
-    ->prefix('penyewa')
-    ->name('penyewa.')
-    ->group(function () {
-        Route::post('/booking/store', [BookingController::class, 'store'])->name('booking.store');
-    });
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminKostController;
+use App\Http\Controllers\Admin\AdminKamarController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\SettingController;
 
 
-    Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    
-    Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
-
-    // Tambahkan route UPDATE STATUS
-    Route::put('/booking/{id}/update-status', [BookingController::class, 'updateStatus'])
-        ->name('booking.update-status');
-
-});
-
-Route::middleware(['auth', 'role:penyewa'])->group(function () {
-
-    Route::get('/penyewa/dashboard', [PenyewaController::class, 'index'])
-        ->name('penyewa.dashboard');
-
-    Route::get('/penyewa/booking', [BookingController::class, 'index'])
-        ->name('penyewa.booking');
-
-    Route::get('/penyewa/kamar', [KamarController::class, 'penyewaView'])
-        ->name('penyewa.kamar');
-
-    Route::get('/penyewa/settings', [PenyewaSettingController::class, 'index'])
-        ->name('penyewa.settings');
-
-});
+// Redirect default
+Route::get('/', fn() => redirect()->route('login'));
 
 
-
-
-// LOGIN
+// =====================
+// AUTH (Guest Only)
+// =====================
 Route::middleware('guest')->group(function () {
+
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.process');
 
-    Route::get('/register', [LoginController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [LoginController::class, 'register'])->name('register.process');
+    Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.process');
 });
 
+
+// =====================
 // LOGOUT
-Route::post('/logout', [LoginController::class, 'logout'])
-    ->name('logout')
-    ->middleware('auth');
+// =====================
+Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
 
-//sidebar
+
+// =====================
+// PENYEWA
+// =====================
+Route::prefix('penyewa')
+    ->name('penyewa.')
+    ->middleware(['auth','role:penyewa'])
+    ->group(function () {
+
+    Route::get('/dashboard', [PenyewaController::class, 'index'])->name('dashboard');
+
+    // Cari Kost
+    Route::get('/cari-kost', [PenyewaKostController::class, 'index'])->name('cari-kost');
+
+    // Kost berdasarkan tipe (cewe/cowo/campur)
+    Route::get('/kost/tipe/{tipe}', [PenyewaKostController::class, 'showByType'])
+        ->name('kost.tipe')
+        ->where('tipe', 'cewe|cowo|campur');
+
+    // detail lengkap 1 kost → harus di atas
+    Route::get('/kost/{id}/detail', [PenyewaKostController::class, 'showDetail'])
+        ->name('kost.detail');
+
+    // detail kost biasa
+    Route::get('/kost/{id}', [PenyewaKostController::class, 'show'])
+        ->name('kost.show');
+
+    // Booking
+    Route::get('/booking', [PenyewaBookingController::class, 'index'])->name('booking');
+    Route::post('/booking/store', [PenyewaBookingController::class, 'store'])->name('booking.store');
+
+    // Booking via WA
+    Route::post('/booking/whatsapp', [PenyewaBookingController::class, 'redirectToWhatsApp'])
+        ->name('booking.whatsapp');
+
+    // Booking dari halaman kamar detail
+    Route::get('/kamar/{id}/booking', [PenyewaBookingController::class, 'booking'])
+        ->name('kamar.booking');
+
+    // List kamar
+    Route::get('/kamar', [PenyewaKamarController::class, 'penyewaView'])->name('kamar');
+
+    // Settings
+    Route::get('/settings', [PenyewaSettingController::class, 'index'])->name('settings');
+});
+ // ← WAJIB! Penutup group penyewa
+
+
+// =====================
+// ADMIN
+// =====================
 Route::prefix('admin')->name('admin.')->middleware(['auth','role:admin'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/booking', [BookingController::class, 'index'])->name('booking.index');
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-    Route::resource('kamar', KamarController::class);
+    Route::resource('kost', AdminKostController::class);
+
+    Route::resource('kamar', AdminKamarController::class);
+    Route::post('/kamar/{id}/status', [AdminKamarController::class, 'updateStatus'])->name('kamar.updateStatus');
+
+    // Booking Routes
+Route::get('/booking', [AdminBookingController::class, 'index'])->name('booking.index');
+Route::post('/booking/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('booking.updateStatus');
+Route::delete('/booking/{id}', [AdminBookingController::class, 'destroy'])->name('booking.destroy');
 
     Route::get('/settings', [SettingController::class, 'index'])->name('settings');
 });
 
 
-// PENYEWA ROUTES
-Route::middleware(['auth', 'role:penyewa'])
-    ->prefix('penyewa')
-    ->name('penyewa.')
-    ->group(function () {
-
-        Route::get('/dashboard', fn() => view('penyewa.dashboard'))->name('dashboard');
-        Route::get('/cari-kost', fn() => view('penyewa.cari-kost'))->name('cari-kost');
-        Route::get('/kost/{id}', fn() => view('penyewa.detail'))->name('detail');
-        Route::get('/booking', fn() => view('penyewa.booking'))->name('booking');
-        Route::get('/pengaturan', fn() => view('penyewa.pengaturan'))->name('pengaturan');
-    });
-
-
-// ADMIN ROUTES
-Route::middleware(['auth', 'role:admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('dashboard');
-
-        Route::get('/kamar', fn() => view('admin.kamar.index'))->name('kamar.index');
-        Route::get('/kamar/create', fn() => view('admin.kamar.create'))->name('kamar.create');
-        Route::get('/kamar/{id}/edit', fn() => view('admin.kamar.edit'))->name('kamar.edit');
-
-        Route::get('/booking', fn() => view('admin.booking.index'))->name('booking.index');
-    });
-
-    
-
 // Fallback
-Route::fallback(function () {
-    return redirect()->route('login')->with('error', 'Halaman tidak ditemukan.');
-});
+Route::fallback(fn() => redirect()->route('login')->with('error', 'Halaman tidak ditemukan.'));

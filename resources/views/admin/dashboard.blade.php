@@ -86,10 +86,12 @@
                     @forelse($bookingTerbaru ?? [] as $booking)
                     <div class="border-l-4 {{ $booking->status == 'pending' ? 'border-orange-500 bg-orange-50' : 'border-green-500 bg-green-50' }} p-4 rounded">
                         <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-800">{{ $booking->user->name }}</h3>
-                                <p class="text-sm text-gray-600">{{ $booking->kost->nama }} - Kamar {{ $booking->kamar_nomor }}</p>
-                            </div>
+                           <div>
+    <h3 class="font-semibold text-gray-800">{{ $booking->user->name }}</h3>
+    <p class="text-sm text-gray-600">
+        {{ $booking->kamar->kost->nama ?? 'Kost tidak ditemukan' }} - Kamar {{ $booking->kamar->nomor ?? '-' }}
+    </p>
+</div>
                             <span class="px-3 py-1 rounded-full text-xs font-semibold
                                 {{ $booking->status == 'pending' ? 'bg-orange-200 text-orange-800' : 'bg-green-200 text-green-800' }}">
                                 {{ ucfirst($booking->status) }}
@@ -106,69 +108,7 @@
                 </div>
             </div>
             
-            <!-- Statistik Kost -->
-            <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-6">
-                    <i class="fas fa-chart-bar text-blue-600 mr-2"></i>Statistik Kost
-                </h2>
-                
-                <div class="space-y-4">
-                    <!-- Kost Cewe -->
-                    <div class="border-l-4 border-pink-500 bg-pink-50 p-4 rounded">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-800">Kost Khusus Cewe</h3>
-                                <p class="text-sm text-gray-600">Jl. Sudirman No. 123</p>
-                            </div>
-                            <i class="fas fa-female text-pink-500 text-3xl"></i>
-                        </div>
-                        <div class="flex items-center justify-between mt-3">
-                            <span class="text-xs text-gray-600">Occupancy</span>
-                            <span class="text-sm font-bold text-pink-600">3/5 Kamar</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div class="bg-pink-500 h-2 rounded-full" style="width: 60%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Kost Cowo -->
-                    <div class="border-l-4 border-blue-500 bg-blue-50 p-4 rounded">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-800">Kost Khusus Cowo</h3>
-                                <p class="text-sm text-gray-600">Jl. Gatot Subroto No. 45</p>
-                            </div>
-                            <i class="fas fa-male text-blue-500 text-3xl"></i>
-                        </div>
-                        <div class="flex items-center justify-between mt-3">
-                            <span class="text-xs text-gray-600">Occupancy</span>
-                            <span class="text-sm font-bold text-blue-600">2/5 Kamar</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div class="bg-blue-500 h-2 rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Kost Campuran -->
-                    <div class="border-l-4 border-purple-500 bg-purple-50 p-4 rounded">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <h3 class="font-semibold text-gray-800">Kost Campuran</h3>
-                                <p class="text-sm text-gray-600">Jl. Thamrin No. 78</p>
-                            </div>
-                            <i class="fas fa-users text-purple-500 text-3xl"></i>
-                        </div>
-                        <div class="flex items-center justify-between mt-3">
-                            <span class="text-xs text-gray-600">Occupancy</span>
-                            <span class="text-sm font-bold text-purple-600">2/5 Kamar</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                            <div class="bg-purple-500 h-2 rounded-full" style="width: 40%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    
         
         <!-- Quick Actions -->
         <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">

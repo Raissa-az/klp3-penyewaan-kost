@@ -5,12 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class LoginController extends Controller
 {
-    // Jika ingin mencegah user sudah login mengakses halaman login/register
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
@@ -28,52 +25,23 @@ class LoginController extends Controller
             'password' => 'required'
         ]);
 
-        $credentials = $request->only('email', 'password');
+        if (Auth::attempt($request->only('email', 'password'))) {
 
-        if (Auth::attempt($credentials)) {
-            // Regenerate session agar aman
             $request->session()->regenerate();
 
-            $role = Auth::user()->role;
-
-            if ($role === 'admin') {
+            if (Auth::user()->role === 'admin') {
                 return redirect()->route('admin.dashboard');
             }
 
-            if ($role === 'penyewa') {
+            if (Auth::user()->role === 'penyewa') {
                 return redirect()->route('penyewa.dashboard');
             }
 
-            // Jika role tidak sesuai / belum di-set
             Auth::logout();
-            return redirect()->route('login')->with('error', 'Role user tidak dikenali. Hubungi admin.');
+            return redirect()->route('login')->with('error', 'Role user tidak dikenali.');
         }
 
-        return back()->withInput($request->only('email'))->with('error', 'Email atau password salah!');
-    }
-
-    public function showRegisterForm()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name'                  => 'required|string|max:255',
-            'email'                 => 'required|email|unique:users,email',
-            'password'              => 'required|min:6|confirmed'
-        ]);
-
-        // Default role = penyewa (aman)
-        User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'role'     => 'penyewa',
-            'password' => Hash::make($request->password),
-        ]);
-
-        return redirect()->route('login')->with('success', 'Akun berhasil dibuat. Silakan login.');
+        return back()->withInput()->with('error', 'Email atau password salah!');
     }
 
     public function logout(Request $request)

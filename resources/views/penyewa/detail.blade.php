@@ -1,220 +1,242 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Kost - KostKu')
+@section('title', isset($kost) ? 'Detail ' . $kost->nama . ' - KostKu' : 'Detail Kost - KostKu')
 
 @section('content')
-<div class="py-8">
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         <!-- Back Button -->
-        <a href="{{ route('penyewa.cari-kost') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
+        <a href="{{ route('penyewa.cari-kost') }}" 
+           class="inline-flex items-center bg-white hover:bg-gray-50 text-gray-800 font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 mb-6 border-2 border-gray-200">
             <i class="fas fa-arrow-left mr-2"></i>Kembali ke Pencarian
         </a>
-        
-        <!-- Kost Info -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+
+        @if(isset($kost) && $kost)
+        @php
+            $colors = [
+                'cewe' => [
+                    'gradient' => 'from-pink-400 via-pink-500 to-pink-600',
+                    'icon' => 'fa-female',
+                    'badge' => 'bg-pink-600',
+                    'badgeLight' => 'bg-pink-100 text-pink-800',
+                    'border' => 'border-pink-500',
+                    'button' => 'from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700',
+                    'text' => 'text-pink-600'
+                ],
+                'cowo' => [
+                    'gradient' => 'from-blue-400 via-blue-500 to-blue-600',
+                    'icon' => 'fa-male',
+                    'badge' => 'bg-blue-600',
+                    'badgeLight' => 'bg-blue-100 text-blue-800',
+                    'border' => 'border-blue-500',
+                    'button' => 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+                    'text' => 'text-blue-600'
+                ],
+                'campuran' => [
+                    'gradient' => 'from-purple-400 via-purple-500 to-purple-600',
+                    'icon' => 'fa-users',
+                    'badge' => 'bg-purple-600',
+                    'badgeLight' => 'bg-purple-100 text-purple-800',
+                    'border' => 'border-purple-500',
+                    'button' => 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
+                    'text' => 'text-purple-600'
+                ],
+            ];
+            $type = $kost->tipe ?? 'campuran';
+            $color = $colors[$type];
+            
+            // Fasilitas berdasarkan tipe kost
+            $fasilitasDefault = [
+                'cewe' => [
+                    ['icon' => 'fa-bed', 'text' => 'Kasur', 'color' => 'text-pink-600'],
+                    ['icon' => 'fa-bath', 'text' => 'Kamar Mandi Dalam', 'color' => 'text-blue-600'],
+                    ['icon' => 'fa-utensils', 'text' => 'Dapur Sharing', 'color' => 'text-orange-600'],
+                    ['icon' => 'fa-snowflake', 'text' => 'Kipas Angin', 'color' => 'text-cyan-600'],
+                    ['icon' => 'fa-door-closed', 'text' => 'Lemari', 'color' => 'text-brown-600'],
+                ],
+                'cowo' => [
+                    ['icon' => 'fa-bed', 'text' => 'Kasur', 'color' => 'text-blue-600'],
+                    ['icon' => 'fa-bath', 'text' => 'Kamar Mandi Sharing', 'color' => 'text-blue-600'],
+                    ['icon' => 'fa-utensils', 'text' => 'Dapur Sharing', 'color' => 'text-orange-600'],
+                    ['icon' => 'fa-door-closed', 'text' => 'Lemari', 'color' => 'text-brown-600'],
+                ],
+                'campuran' => [
+                    ['icon' => 'fa-bath', 'text' => 'Kamar Mandi Dalam', 'color' => 'text-blue-600'],
+                    ['icon' => 'fa-times-circle', 'text' => 'Fasilitas Kosong (Unfurnished)', 'color' => 'text-red-600'],
+                ],
+            ];
+            $fasilitas = $fasilitasDefault[$type] ?? [];
+        @endphp
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8 border-2 border-gray-100">
             <div class="md:flex">
-                <div class="md:w-1/3">
-                    <div class="h-full flex items-center justify-center p-12
-                        {{ $kost->tipe ?? 'cewe' == 'cewe' ? 'bg-gradient-to-br from-pink-400 to-pink-500' : '' }}
-                        {{ $kost->tipe ?? 'cowo' == 'cowo' ? 'bg-gradient-to-br from-blue-400 to-blue-500' : '' }}
-                        {{ $kost->tipe ?? 'campuran' == 'campuran' ? 'bg-gradient-to-br from-purple-400 to-purple-500' : '' }}">
-                        <i class="fas {{ $kost->tipe ?? 'cewe' == 'cewe' ? 'fa-female' : ($kost->tipe ?? 'cowo' == 'cowo' ? 'fa-male' : 'fa-users') }} text-white" style="font-size: 120px;"></i>
+
+                <!-- Kost Icon Section -->
+                <div class="md:w-2/5 relative overflow-hidden">
+                    <div class="h-full min-h-[400px] flex items-center justify-center p-12 bg-gradient-to-br {{ $color['gradient'] }} relative">
+                        <i class="fas {{ $color['icon'] }} text-white relative z-10 transform hover:scale-110 transition-transform duration-300" 
+                           style="font-size: 140px;"></i>
+                        
+                        <!-- Decorative elements -->
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
+                        <div class="absolute bottom-0 left-0 w-32 h-32 bg-white opacity-10 rounded-full -ml-16 -mb-16"></div>
+                        <div class="absolute top-1/2 left-1/2 w-64 h-64 bg-white opacity-5 rounded-full -ml-32 -mt-32"></div>
                     </div>
                 </div>
-                <div class="md:w-2/3 p-8">
-                    <div class="flex items-start justify-between mb-4">
-                        <div>
-                            <span class="inline-block px-4 py-1 rounded-full text-sm font-semibold mb-3
-                                {{ $kost->tipe ?? 'cewe' == 'cewe' ? 'bg-pink-100 text-pink-800' : '' }}
-                                {{ $kost->tipe ?? 'cowo' == 'cowo' ? 'bg-blue-100 text-blue-800' : '' }}
-                                {{ $kost->tipe ?? 'campuran' == 'campuran' ? 'bg-purple-100 text-purple-800' : '' }}">
-                                Kost Khusus {{ ucfirst($kost->tipe ?? 'Cewe') }}
-                            </span>
-                            <h1 class="text-3xl font-bold text-gray-800">{{ $kost->nama ?? 'Kost Putri Melati' }}</h1>
+
+                <!-- Kost Details Section -->
+                <div class="md:w-3/5 p-8 md:p-10">
+                    <!-- Header -->
+                    <div class="mb-6">
+                        <span class="inline-block px-5 py-2 rounded-full text-sm font-bold mb-4 {{ $color['badgeLight'] }} shadow-md">
+                            <i class="fas {{ $color['icon'] }} mr-2"></i>
+                            Kost {{ ucfirst($type) }}
+                        </span>
+                        <h1 class="text-4xl font-bold text-gray-800 mb-3">{{ $kost->nama ?? '-' }}</h1>
+                        <div class="flex items-start text-gray-600 mb-2">
+                            <i class="fas fa-map-marker-alt text-red-500 mr-3 mt-1 text-xl"></i>
+                            <span class="text-lg">{{ $kost->alamat ?? '-' }}</span>
                         </div>
                     </div>
-                    
-                    <div class="flex items-center text-gray-600 mb-4">
-                        <i class="fas fa-map-marker-alt text-red-500 mr-2"></i>
-                        <span>{{ $kost->alamat ?? 'Jl. Sudirman No. 123, Jakarta Selatan' }}</span>
-                    </div>
-                    
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm text-gray-600 mb-1">Harga Sewa</p>
-                                <p class="text-3xl font-bold text-blue-600">Rp {{ number_format($kost->harga ?? 1500000, 0, ',', '.') }}</p>
-                                <p class="text-sm text-gray-500">per bulan</p>
+
+                    <!-- Price & Availability Card -->
+                    <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-l-4 {{ $color['border'] }} p-6 rounded-xl mb-6 shadow-lg">
+                        <div class="flex items-center justify-between flex-wrap gap-6">
+                            <div class="flex-1">
+                                <p class="text-sm text-gray-600 mb-2 font-semibold flex items-center">
+                                    <i class="fas fa-tag {{ $color['text'] }} mr-2"></i>
+                                    Harga Sewa
+                                </p>
+                                <p class="text-4xl font-bold {{ $color['text'] }} mb-1">
+                                    Rp {{ number_format($kost->harga ?? 0, 0, ',', '.') }}
+                                </p>
+                                <p class="text-sm text-gray-500 font-medium">per bulan</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-sm text-gray-600 mb-1">Kamar Tersedia</p>
-                                <p class="text-2xl font-bold text-green-600">{{ $kost->kamar_tersedia ?? 5 }}</p>
-                                <p class="text-sm text-gray-500">dari {{ $kost->total_kamar ?? 5 }} kamar</p>
+                                <p class="text-sm text-gray-600 mb-2 font-semibold flex items-center justify-end">
+                                    <i class="fas fa-door-open text-green-600 mr-2"></i>
+                                    Ketersediaan
+                                </p>
+                                <p class="text-3xl font-bold text-green-600 mb-1">{{ $kost->kamar_tersedia ?? 0 }}</p>
+                                <p class="text-sm text-gray-500 font-medium">dari {{ $kost->total_kamar ?? 0 }} kamar</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div>
-                        <h3 class="font-semibold text-gray-800 mb-3">
-                            <i class="fas fa-check-circle text-green-500 mr-2"></i>Fasilitas
+
+                    <!-- Fasilitas -->
+                    <div class="mb-6">
+                        <h3 class="font-bold text-xl text-gray-800 mb-4 flex items-center">
+                            <div class="bg-green-100 text-green-600 rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            Fasilitas Kamar
                         </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            @if($kost->tipe ?? 'cewe' == 'cewe')
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-bed text-blue-500 mr-2"></i>Kasur
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            @foreach($fasilitas as $item)
+                            <div class="flex items-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-colors border-2 border-gray-100">
+                                <div class="bg-white rounded-full w-12 h-12 flex items-center justify-center mr-4 shadow-md">
+                                    <i class="fas {{ $item['icon'] }} {{ $item['color'] }} text-xl"></i>
                                 </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-bath text-blue-500 mr-2"></i>Kamar Mandi Dalam
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-wind text-blue-500 mr-2"></i>Kipas Angin
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-utensils text-blue-500 mr-2"></i>Dapur Sharing
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-door-closed text-blue-500 mr-2"></i>Lemari
-                                </div>
-                            @elseif($kost->tipe ?? 'cowo' == 'cowo')
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-bed text-blue-500 mr-2"></i>Kasur
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-bath text-blue-500 mr-2"></i>Kamar Mandi Sharing
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-utensils text-blue-500 mr-2"></i>Dapur Sharing
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-door-closed text-blue-500 mr-2"></i>Lemari
-                                </div>
-                            @else
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-bath text-blue-500 mr-2"></i>Kamar Mandi Dalam
-                                </div>
-                                <div class="flex items-center text-gray-600">
-                                    <i class="fas fa-ban text-red-500 mr-2"></i>Fasilitas Kosong
-                                </div>
-                            @endif
+                                <span class="text-gray-700 font-semibold">{{ $item['text'] }}</span>
+                            </div>
+                            @endforeach
                         </div>
+                    </div>
+
+                    <!-- Quick Info -->
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl text-center border-2 border-blue-200">
+                            <i class="fas fa-wifi text-blue-600 text-2xl mb-2"></i>
+                            <p class="text-xs text-gray-600 font-semibold">WiFi Area</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl text-center border-2 border-green-200">
+                            <i class="fas fa-shield-alt text-green-600 text-2xl mb-2"></i>
+                            <p class="text-xs text-gray-600 font-semibold">Keamanan 24/7</p>
+                        </div>
+                    </div>
+
+                    <!-- CTA Button -->
+                    <div class="flex gap-4">
+                        <button onclick="window.scrollTo({top: document.getElementById('daftar-kamar').offsetTop - 100, behavior: 'smooth'})"
+                                class="flex-1 bg-gradient-to-r {{ $color['button'] }} text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-bed mr-2"></i>Lihat Daftar Kamar
+                        </button>
+                        <a href="https://wa.me/6281234567890?text=Halo Admin, saya tertarik dengan {{ urlencode($kost->nama) }}" 
+                           target="_blank"
+                           class="flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Daftar Kamar -->
-        <div class="bg-white rounded-xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-door-open text-blue-600 mr-2"></i>Daftar Kamar
-            </h2>
+
+        <!-- Features Section -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow border-2 border-gray-100">
+                <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clock text-blue-600 text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-2">Akses 24 Jam</h4>
+                <p class="text-sm text-gray-600">Bebas keluar masuk kapan saja</p>
+            </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @for($i = 1; $i <= 5; $i++)
-                @php
-                    $status = $i <= 3 ? 'tersedia' : 'terbooking';
-                @endphp
-                <div class="border rounded-lg p-6 {{ $status == 'tersedia' ? 'bg-white hover:shadow-lg' : 'bg-gray-50' }} transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-800">Kamar {{ $i }}</h3>
-                            <p class="text-sm text-gray-500">Lantai {{ ceil($i/2) }}</p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold
-                            {{ $status == 'tersedia' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <i class="fas {{ $status == 'tersedia' ? 'fa-check-circle' : 'fa-times-circle' }} mr-1"></i>
-                            {{ ucfirst($status) }}
-                        </span>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
-                            <span><i class="fas fa-ruler-combined text-blue-500 mr-2"></i>Ukuran</span>
-                            <span class="font-semibold">3x4 m</span>
-                        </div>
-                        <div class="flex items-center justify-between text-sm text-gray-600">
-                            <span><i class="fas fa-money-bill text-green-500 mr-2"></i>Harga</span>
-                            <span class="font-bold text-blue-600">Rp {{ number_format($kost->harga ?? 1500000, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
-                    
-                    @if($status == 'tersedia')
-                        <button onclick="openBookingModal({{ $i }})" 
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                            <i class="fas fa-calendar-check mr-2"></i>Booking Sekarang
-                        </button>
-                    @else
-                        <button disabled 
-                                class="w-full bg-gray-300 text-gray-500 font-semibold py-2 px-4 rounded-lg cursor-not-allowed">
-                            <i class="fas fa-lock mr-2"></i>Tidak Tersedia
-                        </button>
-                    @endif
+            <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow border-2 border-gray-100">
+                <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-parking text-green-600 text-2xl"></i>
                 </div>
-                @endfor
+                <h4 class="font-bold text-gray-800 mb-2">Parkir Luas</h4>
+                <p class="text-sm text-gray-600">Area parkir motor & mobil</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 text-center hover:shadow-xl transition-shadow border-2 border-gray-100">
+                <div class="bg-gradient-to-br from-purple-100 to-purple-200 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-map-marked-alt text-purple-600 text-2xl"></i>
+                </div>
+                <h4 class="font-bold text-gray-800 mb-2">Lokasi Strategis</h4>
+                <p class="text-sm text-gray-600">Dekat kampus & fasilitas umum</p>
             </div>
         </div>
+
+        <!-- Daftar Kamar Section -->
+        <div id="daftar-kamar">
+            @includeIf('penyewa.components.daftar-kamar', ['kost' => $kost, 'color' => $color])
+        </div>
+
+        <!-- Modal Booking -->
+        @includeIf('penyewa.components.modal-booking', ['kost' => $kost, 'color' => $color])
+
+        <!-- Contact Admin Banner -->
+        <div class="mt-8 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-8 text-white text-center overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full -mr-32 -mt-32"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full -ml-24 -mb-24"></div>
+            <div class="relative z-10">
+                <h3 class="text-3xl font-bold mb-3">Punya Pertanyaan?</h3>
+                <p class="mb-6 text-lg">Tim kami siap membantu Anda menemukan kost yang tepat</p>
+                <a href="https://wa.me/6281234567890?text=Halo Admin KostKu, saya ingin bertanya tentang {{ urlencode($kost->nama) }}" 
+                   target="_blank"
+                   class="inline-flex items-center bg-white text-blue-600 hover:bg-gray-100 font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    <i class="fab fa-whatsapp text-2xl mr-3"></i>
+                    <span>Hubungi Admin Sekarang</span>
+                </a>
+            </div>
+        </div>
+
+        @else
+        <div class="bg-white rounded-2xl shadow-xl p-12 text-center">
+            <i class="fas fa-exclamation-triangle text-red-400 text-6xl mb-6"></i>
+            <h3 class="text-2xl font-bold text-gray-800 mb-3">Data Kost Tidak Ditemukan</h3>
+            <p class="text-gray-600 mb-6">Maaf, kost yang Anda cari tidak tersedia</p>
+            <a href="{{ route('penyewa.cari-kost') }}" 
+               class="inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <i class="fas fa-search mr-2"></i>
+                Cari Kost Lainnya
+            </a>
+        </div>
+        @endif
+
     </div>
 </div>
-
-<!-- Booking Modal -->
-<div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" x-data="{ open: false }">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
-            <h3 class="text-2xl font-bold">
-                <i class="fas fa-calendar-check mr-2"></i>Konfirmasi Booking
-            </h3>
-        </div>
-        
-        <form action="{{ route('penyewa.booking.store') }}" method="POST" class="p-6">
-            @csrf
-            <input type="hidden" name="kost_id" value="{{ $kost->id ?? 1 }}">
-            <input type="hidden" name="kamar_nomor" id="kamar_nomor">
-            
-            <div class="mb-6">
-                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-                    <p class="text-sm text-gray-600 mb-1">Detail Booking</p>
-                    <p class="font-semibold text-gray-800">Kamar <span id="modal_kamar_nomor"></span></p>
-                    <p class="text-sm text-gray-600">{{ $kost->nama ?? 'Kost Putri Melati' }}</p>
-                </div>
-                
-                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
-                    <p class="text-sm font-semibold text-yellow-800 mb-2">
-                        <i class="fas fa-info-circle mr-2"></i>Informasi Penting
-                    </p>
-                    <ul class="text-sm text-gray-700 space-y-1">
-                        <li>• Status booking akan <strong>PENDING</strong> setelah konfirmasi</li>
-                        <li>• Hubungi admin melalui WhatsApp untuk pembayaran</li>
-                        <li>• Status menjadi <strong>TERBOOKING</strong> setelah admin konfirmasi</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="flex space-x-3">
-                <button type="button" onclick="closeBookingModal()" 
-                        class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition">
-                    Batal
-                </button>
-                <button type="submit" 
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition">
-                    <i class="fas fa-check mr-2"></i>Konfirmasi
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-@push('scripts')
-<script>
-function openBookingModal(kamarNomor) {
-    document.getElementById('kamar_nomor').value = kamarNomor;
-    document.getElementById('modal_kamar_nomor').textContent = kamarNomor;
-    document.getElementById('bookingModal').classList.remove('hidden');
-    document.getElementById('bookingModal').classList.add('flex');
-}
-
-function closeBookingModal() {
-    document.getElementById('bookingModal').classList.add('hidden');
-    document.getElementById('bookingModal').classList.remove('flex');
-}
-</script>
-@endpush
 @endsection

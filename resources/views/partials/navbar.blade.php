@@ -36,7 +36,8 @@
                  class="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg overflow-hidden">
 
                 <!-- Profile (optional) -->
-                <a href="{{ route('profile') }}"
+                <a href="{{ route('penyewa.settings') }}"
+
                    class="block px-4 py-2 hover:bg-gray-100">
                     <i class="fas fa-user mr-2"></i> Profil
                 </a>
